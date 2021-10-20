@@ -1,20 +1,22 @@
 ###########################################################################################
 # Compute the Sylvester Denumerant through a q-Partial Fraction of
 # the generating function F(x)=p(x)/((1-x)^n0(1-x^n1)^r1...(1-x^nk)^rk)
-#
+# INPUT:
 #    t: the value for which we want to compute the denumerant
 #    p: numerator, a polynomial in the ring Q[x]
 #    N: exponents corresponding to the denominator
 #        N=[(n1,r1),...,(nk,rk)]
 #    m1: m=m1+r1+...rk, where m is the power of (1-x) in the denominator (default value: 0)
-#    part: determines the output, (default value: 'full')
+#  
+# OUTPUT: returns a value or prints based on the set parameters mentioned below
+#   part: determines the output, (default value: 'full')
 #         'full' returns the sylvester denumerant d(t,A)
 #         'polynomial' returns the polynomial part W_1(t,A)
 #         'periodic' returns the periodic part W_n1(t,A)+\cdots+Wnk(t,A)
 #         'periodic list' returns each periodic part in list form [0,W_n1(t,A),...,Wnk(tA
 #   print_qPF: if set to True, prints the q-Partial Fraction of F(x)  (default value: False)
 #
-#   EXAMPLE:
+# EXAMPLE:
 #   #Computing d(t,(3,11,11)) for all values in [0,200]
 #   P=PolynomialRing(QQ,'x')
 #   p=P(1)
@@ -115,13 +117,20 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
         return periodic_sum_list  #  returns the list [0, W_n1,...,W_nk]
     else:
         return (poly_sum+periodic_sum)  # returns the denumerant
-    
-    
-# Extended Cover-Up Method
-# Input: r: polynomial in the numerator; s: list of polnomials factors in the denominator
-# Output: prints the partial fractions for r/(s[0]*...*s[k-1]), where k=len(s)
-def extended_cover_up(r,s):
 
+    
+###########################################################################################    
+# Extended Cover-Up Method
+# INPUT: 
+#        r: polynomial in the numerator
+#        s: list of pairwise relatively prime polnomial factors in the denominator
+# OUTPUT: 
+#        prints the partial fractions for r/(s[0]*...*s[k-1]), where k=len(s)
+# EXAMPLE:
+#   P=PolynomialRing(QQ,'x')
+#   extended_cover_up(P(1),[P(x^2+1), P(x-1)])
+###########################################################################################   
+def extended_cover_up(r,s):
     #number of factors in the denominator
     k=len(s)
 
