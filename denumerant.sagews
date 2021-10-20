@@ -58,7 +58,7 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
     for i in range(k):
         poly.append(P(sum([x^j for j in range(0,N[i][0])])^(N[i][1])))
 
-    # extended cover-up method: determining the numerators of the partial fraction of F(x), Theorem 1.2.1
+    # extended cover-up method: determining the numerators of the partial fraction of F(x)
     f=[]
     for i in range(0,k+1):
         s=1
@@ -115,14 +115,45 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
         return periodic_sum_list  #  returns the list [0, W_n1,...,W_nk]
     else:
         return (poly_sum+periodic_sum)  # returns the denumerant
+    
+    
+# Extended Cover-Up Method
+# Input: r: polynomial in the numerator; s: list of polnomials factors in the denominator
+# Output: prints the partial fractions for r/(s[0]*...*s[k-1]), where k=len(s)
+def extended_cover_up(r,s):
+
+    #number of factors in the denominator
+    k=len(s)
+
+    for i in range(0,k):
+        for j in range(i+1,k):
+            if gcd(s[i],s[j])!=1:
+                print("Invalid input: the factors should be pairwise relatively prime.")
+                return
+
+    #computing the numerators in the partial fraction using the extended cover-up method
+    f=[]
+    for i in range(0,k):
+        t=1
+        for j in range(0,k):
+            if i!=j:
+                t=t*s[j]
+        f.append(eval(r,t,s[i]))
+
+    #converting to string
+    S=str("(")+str(f[0])+str(")")+"/"+str("(")+str(s[0])+str(")\n")
+    for j in range(1,k):
+         S=S+str("+")+str("(")+str(f[j])+str(")")+"/"+str("(")+str(s[j])+str(")\n")
+
+    print("The partial fraction is:\n"+S)
 
 
-# eval function with assumption gcd(s,a)=1, Definition 1.2.1
+# eval function with assumption gcd(s,a)=1
 def eval(r,s,a):
     h=xgcd(s,a)
     return (r*h[1])%a
 
-# a generalized taylor series with terms (1-x^b)^j, Theorem 3.2.1
+# a generalized taylor series with terms (1-x^b)^j
 def gen_taylor(f,b):
     P=PolynomialRing(QQ,x)
     L=[]
@@ -131,7 +162,6 @@ def gen_taylor(f,b):
         f=Diff_b(P(f),b)
     return L
 
-# computes the derivative for Theorem 3.2.1
 def Diff_b(f,b):
     P=PolynomialRing(QQ,x)
     ff=list(f)
@@ -146,6 +176,9 @@ def diff_b(k,b):
         return floor(k/b)*P(x^(k-b))
     else:
         return P(0)
+    
+    
+
 
 
 
