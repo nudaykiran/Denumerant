@@ -29,7 +29,6 @@
 #   #Compute d(73,(9,17,31))
 #   DENUMERANT(73,p,[(9,1),(17,1),(31,1)],0,part='full',print_qPF=True)
 #
-#   Reference: 
 ###########################################################################################
 
 def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
