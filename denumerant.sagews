@@ -91,7 +91,7 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
     for j in range(1,len(poly_part)):
         S_poly=S_poly+"+"+str(poly_part[j])+"(1-x)^"+str(j)
     if print_qPF:
-        print("Simplified form of the numerator of the polynomial part: \n"+S_poly)
+        print("Simplified form of the 'polynomial part': \n"+S_poly+"/"+"("+")")
 
 
     # compute the polynomial part, periodic parts, and the denumerant
