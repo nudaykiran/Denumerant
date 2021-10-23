@@ -7,13 +7,14 @@
 #    N: exponents corresponding to the denominator
 #        N=[(n1,r1),...,(nk,rk)]
 #    m1: m=m1+r1+...rk, where m is the power of (1-x) in the denominator (default value: 0)
-#  
+#
 # OUTPUT: returns a value or prints based on the set parameters mentioned below
 #   part: determines the output, (default value: 'full')
 #         'full' returns the sylvester denumerant d(t,A)
 #         'polynomial' returns the polynomial part W_1(t,A)
 #         'periodic' returns the periodic part W_n1(t,A)+\cdots+Wnk(t,A)
-#         'periodic list' returns each periodic part in list form [0,W_n1(t,A),...,Wnk(tA
+#         'periodic list' returns each periodic part in list form [0,W_n1(t,A),...,W_nk(t,A)
+#         'generalized fds' returns the top-oder coefficients of the periodic part (assumes r1=...=rk)
 #   print_qPF: if set to True, prints the q-Partial Fraction of F(x)  (default value: False)
 #
 # EXAMPLE:
@@ -31,14 +32,17 @@
 #   #Compute d(73,(9,17,31))
 #   DENUMERANT(73,p,[(9,1),(17,1),(31,1)],0,part='full',print_qPF=True)
 #
+#   #Generalized FDS terms for (3,3,3,4,4,4)
+#   P=PolynomialRing(QQ,'x')
+#   L=[]
+#   for t in range(1,60):
+#       L.append(DENUMERANT(t,P(1),[(3,3),(4,3)],0,part='generalized FDS'))
+#
 ###########################################################################################
 
-def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
+def DENUMERANT(t,p,N,m1=0,part='full',print_qPF=False):
 
-    P=PolynomialRing(QQ,'x')
-    p=P(p)
-
-# check for N[0] to be pairwise relatively prime and they are not equal to 1
+    # check for N[0] to be pairwise relatively prime and they are not equal to 1
     for i in range(len(N)):
         if N[i][0] !=1:
             for j in range(i+1,len(N)):
@@ -49,36 +53,38 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
             print("Error: Cannot inlcude 1 in the list.")
             return
 
+    if part == 'generalized FDS':
+        for i in range(len(N)):
+            if N[i][1]!=N[0][1]:
+                print("Error: All multiplicities must be same.")
+                return 
+            
+    m=sum([z[1] for z in N])+m1
 
-    k=len(N)
-
-    m=m1+sum([z[1] for z in N])
-
-    # list the denominator terms of F(x)
     poly=[]
     poly.append(P((1-x)^(m)))
-    for i in range(k):
+    for i in range(len(N)):
         poly.append(P(sum([x^j for j in range(0,N[i][0])])^(N[i][1])))
 
-    # extended cover-up method: determining the numerators of the partial fraction of F(x)
+    k=len(poly)
     f=[]
-    for i in range(0,k+1):
+    for i in range(0,k):
         s=1
-        for j in range(0,k+1):
+        for j in range(0,k):
             if i!=j:
                 s=s*poly[j]
         f.append(eval(p,s,poly[i]))
 
-    # Convert to string for printing the q-pf. These steps modify the numerator and denominator.
+
     S=str("(")+str(f[0])+str(")")+"/"+str("(")+str(poly[0])+str(")\n\n")
-    for j in range(1,k+1):
+    for j in range(1,k):
         f[j]=f[j]*P((1-x)^(N[j-1][1]))
         poly[j]=poly[j]*P((1-x)^(N[j-1][1]))
         S=S+str("  +")+str("(")+str(f[j])+str(")")+"/"+str("(")+str(poly[j])+str(")\n\n")
     if print_qPF:
        print("The q-Partial Fractions:\n"+S)
 
-    # Expressing the polynomial part in terms of (1-x)^j
+    # Expressing Polynomial Part in terms of (1-x)^j
     g=f[0]
     poly_part=[]
     while g.degree()!=0:
@@ -92,45 +98,51 @@ def DENUMERANT(t,p,N,m1=0,part='full', print_qPF=False):
         S_poly=S_poly+"+"+str(poly_part[j])+"(1-x)^"+str(j)
     if print_qPF:
         temp_denominator=P((1-x)^m)
-        print("Simplified form of the 'polynomial part': \n"+"("+S_poly+")"+"/"+"("+str(temp_denominator)+")")
+        print("Simplified form of the 'polynomial part': \n"+"("+S_poly+")"+"/"+"("+str(temp_denominator)+")\n\n")
 
 
-    # compute the polynomial part, periodic parts, and the denumerant
+
+    # compute the denumerant
     poly_sum=0
     for j in range(0,m):
         poly_sum=poly_sum+poly_part[j]*binomial(t+m-1-j,t)
 
     periodic_sum=0
     periodic_sum_list=[0]
-    for j in range(1,k+1):
+    gen_fds=0
+    for j in range(1,k):
         temp_sum=0
         L=gen_taylor(f[j],N[j-1][0])
         for i in range(len(L)):
             temp_sum=temp_sum+L[i][t%N[j-1][0]]*binomial(floor(t/N[j-1][0])+N[j-1][1]-1-i,floor(t/N[j-1][0]))
+            if i==0: #assumes that r1=...=rk
+                gen_fds = gen_fds + L[0][t%N[j-1][0]]
         periodic_sum_list.append(temp_sum)
     periodic_sum=sum(periodic_sum_list)
 
-    if part == 'polynomial':
-        return poly_sum           #  returns W_1
-    elif part=='periodic':
-        return periodic_sum       #  returns W_n1+...+W_nk
+    if part=='periodic':
+        return periodic_sum
+    elif part == 'polynomial':
+        return poly_sum
     elif part == 'periodic list':
-        return periodic_sum_list  #  returns the list [0, W_n1,...,W_nk]
+        return periodic_sum_list  #returns a list of contributions of each value
+    elif part == 'generalized FDS': #assumes that r1=...=rk
+        return gen_fds
     else:
-        return (poly_sum+periodic_sum)  # returns the denumerant
+        return (poly_sum+periodic_sum)
 
-    
-###########################################################################################    
+
+###########################################################################################
 # Extended Cover-Up Method
-# INPUT: 
+# INPUT:
 #        r: polynomial in the numerator
 #        s: list of pairwise relatively prime polnomial factors in the denominator
-# OUTPUT: 
+# OUTPUT:
 #        prints the partial fractions for r/(s[0]*...*s[k-1]), where k=len(s)
 # EXAMPLE:
 #   P=PolynomialRing(QQ,'x')
 #   extended_cover_up(P(1),[P(x^2+1), P(x-1)])
-###########################################################################################   
+###########################################################################################
 def extended_cover_up(r,s):
     #number of factors in the denominator
     k=len(s)
@@ -186,9 +198,6 @@ def diff_b(k,b):
         return floor(k/b)*P(x^(k-b))
     else:
         return P(0)
-    
-    
-
 
 
 
