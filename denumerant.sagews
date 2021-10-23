@@ -13,7 +13,7 @@
 #         'full' returns the sylvester denumerant d(t,A)
 #         'polynomial' returns the polynomial part W_1(t,A)
 #         'periodic' returns the periodic part W_n1(t,A)+\cdots+Wnk(t,A)
-#         'periodic list' returns each periodic part in list form [0,W_n1(t,A),...,W_nk(t,A)
+#         'periodic list' returns each periodic part in list form [0,W_n1(t,A),...,W_nk(t,A)]
 #         'generalized fds' returns the top-oder coefficients of the periodic part (assumes r1=...=rk)
 #   print_qPF: if set to True, prints the q-Partial Fraction of F(x)  (default value: False)
 #
